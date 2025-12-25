@@ -1,0 +1,81 @@
+.pixel-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.pixel-input {
+  font-family: var(--font-retro);
+  font-size: 18px;
+  background: var(--deep-cave);
+  border: 2px solid var(--panel-gray);
+  color: var(--screen-green);
+  padding: var(--space-3);
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  /* CRT scanline effect */
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.1) 2px,
+    rgba(0, 0, 0, 0.1) 4px
+  );
+}
+
+.pixel-input:focus {
+  outline: none;
+  border-color: var(--cartridge-teal);
+  box-shadow: 0 0 8px rgba(48, 184, 160, 0.3);
+}
+
+.pixel-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pixel-input::placeholder {
+  color: var(--faded-scroll);
+  opacity: 0.6;
+}
+
+/* Textarea specific */
+.pixel-textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.6;
+}
+
+/* Select specific */
+.pixel-select {
+  cursor: pointer;
+  appearance: none;
+  padding-right: var(--space-6);
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+  background-size: 12px;
+  /* Arrow using CSS instead of image */
+}
+
+.pixel-input-wrapper:has(.pixel-select)::after {
+  content: '▼';
+  position: absolute;
+  right: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--cartridge-teal);
+  font-size: 10px;
+  pointer-events: none;
+}
+
+/* Select options styling */
+.pixel-select option {
+  background: var(--deep-cave);
+  color: var(--parchment);
+  padding: var(--space-2);
+}
+
+/* Focus within wrapper for select arrow color */
+.pixel-input-wrapper:has(.pixel-select:focus)::after {
+  color: var(--screen-green);
+}

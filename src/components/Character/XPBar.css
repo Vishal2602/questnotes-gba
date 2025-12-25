@@ -1,0 +1,84 @@
+.xp-bar-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+  max-width: 300px;
+}
+
+.xp-bar__info {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.xp-bar__level {
+  font-family: var(--font-pixel);
+  font-size: 12px;
+  color: var(--xp-gold);
+  text-shadow: 1px 1px 0 #000;
+}
+
+.xp-bar__rank {
+  font-family: var(--font-retro);
+  font-size: 14px;
+  color: var(--cartridge-teal);
+}
+
+.xp-bar {
+  height: 16px;
+  background: var(--deep-cave);
+  border: 2px solid var(--panel-gray);
+  position: relative;
+  overflow: hidden;
+}
+
+.xp-bar__fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    var(--xp-gold) 0%,
+    #CC9900 50%,
+    var(--xp-gold) 100%
+  );
+  transition: width 0.5s ease-out;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+}
+
+/* Pixel segments overlay */
+.xp-bar__segments {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+
+.xp-bar__segment {
+  flex: 1;
+  border-right: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.xp-bar__segment:last-child {
+  border-right: none;
+}
+
+.xp-bar__text {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.xp-bar__xp {
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  color: var(--faded-scroll);
+}
+
+/* Level up animation */
+.xp-bar-container.level-up .xp-bar__fill {
+  animation: level-up-glow 1s ease-in-out;
+}

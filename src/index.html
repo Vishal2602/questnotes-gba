@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pocket Scribe - GBA Note Quest</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Scanline overlay for CRT effect -->
+    <div class="scanlines"></div>
+
+    <!-- GBA Device Frame -->
+    <div class="gba-device">
+        <!-- Power LED -->
+        <div class="power-led"></div>
+
+        <!-- Screen bezel -->
+        <div class="screen-bezel">
+            <!-- Main Game Screen -->
+            <div class="game-screen" id="gameScreen">
+
+                <!-- Title Screen -->
+                <div class="screen title-screen active" id="titleScreen">
+                    <div class="title-logo">
+                        <div class="title-sprite"></div>
+                        <h1>POCKET<br>SCRIBE</h1>
+                        <p class="subtitle">~ Note Quest ~</p>
+                    </div>
+                    <div class="title-creature"></div>
+                    <p class="press-start blink">PRESS START</p>
+                    <div class="title-footer">
+                        <span>© 2024 PIXEL NOTES INC.</span>
+                    </div>
+                </div>
+
+                <!-- Main Menu Screen -->
+                <div class="screen menu-screen" id="menuScreen">
+                    <div class="menu-header">
+                        <div class="player-info">
+                            <span class="player-name">SCRIBE LV.1</span>
+                            <div class="xp-bar">
+                                <div class="xp-fill" id="xpFill"></div>
+                            </div>
+                            <span class="xp-text" id="xpText">XP: 0/100</span>
+                        </div>
+                    </div>
+
+                    <div class="menu-options">
+                        <div class="menu-item selected" data-action="notes">
+                            <span class="menu-icon">📜</span>
+                            <span>MY SCROLLS</span>
+                            <span class="note-count" id="noteCount">(0)</span>
+                        </div>
+                        <div class="menu-item" data-action="new">
+                            <span class="menu-icon">✨</span>
+                            <span>SUMMON NOTE</span>
+                        </div>
+                        <div class="menu-item" data-action="battle">
+                            <span class="menu-icon">⚔️</span>
+                            <span>NOTE BATTLE</span>
+                        </div>
+                        <div class="menu-item" data-action="stats">
+                            <span class="menu-icon">📊</span>
+                            <span>SCRIBE STATS</span>
+                        </div>
+                    </div>
+
+                    <div class="menu-creature">
+                        <div class="creature-sprite idle" id="menuCreature"></div>
+                        <div class="creature-speech" id="creatureSpeech">Ready to take notes!</div>
+                    </div>
+                </div>
+
+                <!-- Notes List Screen -->
+                <div class="screen notes-screen" id="notesScreen">
+                    <div class="screen-header">
+                        <button class="back-btn" data-goto="menu">◀ BACK</button>
+                        <h2>SCROLL INVENTORY</h2>
+                    </div>
+
+                    <div class="notes-container" id="notesContainer">
+                        <div class="empty-message" id="emptyMessage">
+                            <div class="empty-sprite"></div>
+                            <p>No scrolls found...</p>
+                            <p class="hint">Summon your first note!</p>
+                        </div>
+                    </div>
+
+                    <div class="notes-footer">
+                        <span id="scrollCount">0 SCROLLS</span>
+                    </div>
+                </div>
+
+                <!-- New Note Screen (Summoning) -->
+                <div class="screen new-note-screen" id="newNoteScreen">
+                    <div class="screen-header">
+                        <button class="back-btn" data-goto="menu">◀ BACK</button>
+                        <h2>SUMMON SCROLL</h2>
+                    </div>
+
+                    <div class="summoning-circle" id="summoningCircle">
+                        <div class="magic-particles"></div>
+                    </div>
+
+                    <div class="note-form">
+                        <div class="form-group">
+                            <label>SCROLL NAME:</label>
+                            <input type="text" id="noteTitle" maxlength="24" placeholder="Enter title...">
+                        </div>
+
+                        <div class="form-group">
+                            <label>SCROLL CONTENT:</label>
+                            <textarea id="noteContent" rows="4" placeholder="Write your wisdom..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>MOOD ELEMENT:</label>
+                            <div class="mood-selector" id="moodSelector">
+                                <div class="mood-option selected" data-mood="fire" title="Fire - Urgent">🔥</div>
+                                <div class="mood-option" data-mood="water" title="Water - Calm">💧</div>
+                                <div class="mood-option" data-mood="earth" title="Earth - Important">🌿</div>
+                                <div class="mood-option" data-mood="lightning" title="Lightning - Idea">⚡</div>
+                                <div class="mood-option" data-mood="star" title="Star - Favorite">⭐</div>
+                            </div>
+                        </div>
+
+                        <button class="summon-btn" id="summonBtn">
+                            <span class="btn-icon">✨</span>
+                            SUMMON!
+                        </button>
+                    </div>
+                </div>
+
+                <!-- View/Edit Note Screen -->
+                <div class="screen view-note-screen" id="viewNoteScreen">
+                    <div class="screen-header">
+                        <button class="back-btn" data-goto="notes">◀ BACK</button>
+                        <div class="note-actions">
+                            <button class="action-btn edit-btn" id="editNoteBtn">✏️</button>
+                            <button class="action-btn delete-btn" id="deleteNoteBtn">🗑️</button>
+                        </div>
+                    </div>
+
+                    <div class="note-display">
+                        <div class="note-creature-display" id="noteCreatureDisplay"></div>
+                        <div class="note-scroll">
+                            <h3 id="viewNoteTitle">Note Title</h3>
+                            <div class="note-stats">
+                                <span class="note-level" id="viewNoteLevel">LV.1</span>
+                                <span class="note-mood" id="viewNoteMood">🔥</span>
+                                <span class="note-power" id="viewNotePower">PWR: 10</span>
+                            </div>
+                            <div class="note-content-display" id="viewNoteContent">
+                                Note content goes here...
+                            </div>
+                            <div class="note-meta">
+                                <span id="viewNoteDate">Created: --</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Battle Screen -->
+                <div class="screen battle-screen" id="battleScreen">
+                    <div class="screen-header">
+                        <button class="back-btn" data-goto="menu">◀ FLEE</button>
+                        <h2>NOTE BATTLE!</h2>
+                    </div>
+
+                    <div class="battle-arena">
+                        <div class="battle-note left" id="battleNoteLeft">
+                            <div class="battle-creature"></div>
+                            <div class="hp-bar">
+                                <div class="hp-fill"></div>
+                            </div>
+                            <span class="battle-name">---</span>
+                        </div>
+
+                        <div class="vs-symbol">VS</div>
+
+                        <div class="battle-note right" id="battleNoteRight">
+                            <div class="battle-creature"></div>
+                            <div class="hp-bar">
+                                <div class="hp-fill"></div>
+                            </div>
+                            <span class="battle-name">---</span>
+                        </div>
+                    </div>
+
+                    <div class="battle-log" id="battleLog">
+                        <p>Select two notes to battle!</p>
+                    </div>
+
+                    <div class="battle-select" id="battleSelect">
+                        <!-- Notes will be populated here -->
+                    </div>
+
+                    <button class="battle-btn" id="startBattleBtn">⚔️ FIGHT!</button>
+                </div>
+
+                <!-- Stats Screen -->
+                <div class="screen stats-screen" id="statsScreen">
+                    <div class="screen-header">
+                        <button class="back-btn" data-goto="menu">◀ BACK</button>
+                        <h2>SCRIBE STATS</h2>
+                    </div>
+
+                    <div class="stats-container">
+                        <div class="stat-card">
+                            <div class="stat-icon">📜</div>
+                            <div class="stat-value" id="statNotes">0</div>
+                            <div class="stat-label">SCROLLS</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⚔️</div>
+                            <div class="stat-value" id="statBattles">0</div>
+                            <div class="stat-label">BATTLES</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">✨</div>
+                            <div class="stat-value" id="statXP">0</div>
+                            <div class="stat-label">TOTAL XP</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📝</div>
+                            <div class="stat-value" id="statWords">0</div>
+                            <div class="stat-label">WORDS</div>
+                        </div>
+                    </div>
+
+                    <div class="achievements">
+                        <h3>ACHIEVEMENTS</h3>
+                        <div class="achievement-list" id="achievementList">
+                            <div class="achievement locked" data-id="first_note">
+                                <span class="ach-icon">📜</span>
+                                <span class="ach-name">First Scroll</span>
+                            </div>
+                            <div class="achievement locked" data-id="note_collector">
+                                <span class="ach-icon">📚</span>
+                                <span class="ach-name">Collector (10)</span>
+                            </div>
+                            <div class="achievement locked" data-id="first_battle">
+                                <span class="ach-icon">⚔️</span>
+                                <span class="ach-name">First Battle</span>
+                            </div>
+                            <div class="achievement locked" data-id="word_master">
+                                <span class="ach-icon">✍️</span>
+                                <span class="ach-name">1000 Words</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notification Toast -->
+                <div class="toast" id="toast">
+                    <span class="toast-icon">✨</span>
+                    <span class="toast-message">Achievement unlocked!</span>
+                </div>
+
+                <!-- Level Up Overlay -->
+                <div class="level-up-overlay" id="levelUpOverlay">
+                    <div class="level-up-content">
+                        <h2>LEVEL UP!</h2>
+                        <div class="level-up-creature"></div>
+                        <p class="new-level">LV.<span id="newLevel">2</span></p>
+                        <button class="continue-btn" id="levelUpContinue">CONTINUE</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GBA Controls -->
+        <div class="gba-controls">
+            <div class="dpad">
+                <div class="dpad-up"></div>
+                <div class="dpad-down"></div>
+                <div class="dpad-left"></div>
+                <div class="dpad-right"></div>
+                <div class="dpad-center"></div>
+            </div>
+            <div class="action-buttons">
+                <div class="btn-b">B</div>
+                <div class="btn-a">A</div>
+            </div>
+        </div>
+
+        <!-- Speaker grills -->
+        <div class="speaker-grill left"></div>
+        <div class="speaker-grill right"></div>
+
+        <!-- GBA Label -->
+        <div class="gba-label">GAME BOY ADVANCE</div>
+    </div>
+
+    <!-- Audio elements for 8-bit sounds -->
+    <div id="audioContainer" style="display:none;"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

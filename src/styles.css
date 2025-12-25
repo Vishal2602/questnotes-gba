@@ -1,0 +1,1427 @@
+/* ==========================================
+   POCKET SCRIBE - GBA NOTE QUEST
+   16-bit Retro Note-Taking Experience
+   ========================================== */
+
+/* CSS Reset & Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* GBA Color Palette */
+    --gba-shell: #9098b8;
+    --gba-shell-dark: #6b7394;
+    --gba-shell-light: #a8b0d0;
+    --gba-bezel: #1a1a2e;
+    --gba-screen-bg: #8bac0f;
+    --gba-screen-light: #9bbc0f;
+    --gba-screen-dark: #306230;
+    --gba-screen-darkest: #0f380f;
+
+    /* UI Colors */
+    --pixel-white: #f8f8f8;
+    --pixel-black: #181818;
+    --pixel-gray: #888888;
+    --pixel-red: #e84040;
+    --pixel-blue: #4080e8;
+    --pixel-green: #40e840;
+    --pixel-yellow: #e8e840;
+    --pixel-purple: #a040e8;
+    --pixel-orange: #e89040;
+
+    /* Mood Colors */
+    --mood-fire: #ff6b35;
+    --mood-water: #4ecdc4;
+    --mood-earth: #a8e6cf;
+    --mood-lightning: #ffd93d;
+    --mood-star: #ff9ff3;
+}
+
+@font-face {
+    font-family: 'PixelFont';
+    src: local('Press Start 2P');
+}
+
+body {
+    font-family: 'Press Start 2P', monospace;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    overflow-x: hidden;
+    image-rendering: pixelated;
+    -webkit-font-smoothing: none;
+}
+
+/* Scanline Overlay Effect */
+.scanlines {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1000;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.1) 0px,
+        rgba(0, 0, 0, 0.1) 1px,
+        transparent 1px,
+        transparent 2px
+    );
+}
+
+/* ==========================================
+   GBA DEVICE FRAME
+   ========================================== */
+
+.gba-device {
+    position: relative;
+    background: linear-gradient(180deg, var(--gba-shell-light) 0%, var(--gba-shell) 50%, var(--gba-shell-dark) 100%);
+    border-radius: 20px 20px 60px 60px;
+    padding: 20px;
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        inset 0 2px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    width: 100%;
+}
+
+.power-led {
+    position: absolute;
+    top: 15px;
+    left: 30px;
+    width: 8px;
+    height: 8px;
+    background: var(--pixel-green);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--pixel-green), 0 0 20px var(--pixel-green);
+    animation: ledBlink 2s infinite;
+}
+
+@keyframes ledBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Screen Bezel */
+.screen-bezel {
+    background: var(--gba-bezel);
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow:
+        inset 0 3px 10px rgba(0, 0, 0, 0.5),
+        0 2px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Main Game Screen */
+.game-screen {
+    position: relative;
+    background: linear-gradient(180deg, var(--gba-screen-light) 0%, var(--gba-screen-bg) 100%);
+    border-radius: 4px;
+    width: 100%;
+    aspect-ratio: 3/2;
+    overflow: hidden;
+    box-shadow:
+        inset 0 0 30px rgba(15, 56, 15, 0.5),
+        0 0 0 2px var(--gba-screen-darkest);
+    image-rendering: pixelated;
+}
+
+/* Screen States */
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 8px;
+    display: none;
+    flex-direction: column;
+    color: var(--gba-screen-darkest);
+    font-size: 6px;
+    overflow: hidden;
+}
+
+.screen.active {
+    display: flex;
+    animation: screenFadeIn 0.3s ease-out;
+}
+
+@keyframes screenFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* ==========================================
+   TITLE SCREEN
+   ========================================== */
+
+.title-screen {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.title-logo {
+    position: relative;
+    z-index: 2;
+}
+
+.title-logo h1 {
+    font-size: 16px;
+    color: var(--gba-screen-darkest);
+    text-shadow: 2px 2px 0 var(--gba-screen-dark);
+    letter-spacing: 2px;
+    line-height: 1.4;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    font-size: 6px;
+    color: var(--gba-screen-dark);
+    margin-bottom: 20px;
+}
+
+.title-sprite {
+    width: 32px;
+    height: 32px;
+    margin: 0 auto 10px;
+    background: var(--gba-screen-darkest);
+    /* Pixel art scroll sprite */
+    clip-path: polygon(
+        10% 0%, 90% 0%, 100% 10%, 100% 90%, 90% 100%, 10% 100%, 0% 90%, 0% 10%
+    );
+    animation: titleBob 1s ease-in-out infinite;
+}
+
+@keyframes titleBob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+.title-creature {
+    position: absolute;
+    bottom: 50px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    animation: creatureIdle 0.5s steps(2) infinite;
+}
+
+.title-creature::before {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: var(--gba-screen-darkest);
+    border-radius: 50% 50% 40% 40%;
+    position: relative;
+}
+
+.title-creature::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 8px;
+    width: 6px;
+    height: 6px;
+    background: var(--gba-screen-light);
+    box-shadow: 16px 0 0 var(--gba-screen-light);
+    border-radius: 50%;
+}
+
+.press-start {
+    font-size: 8px;
+    margin-top: 20px;
+}
+
+.blink {
+    animation: blink 1s steps(2) infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+.title-footer {
+    position: absolute;
+    bottom: 10px;
+    font-size: 4px;
+    color: var(--gba-screen-dark);
+}
+
+/* ==========================================
+   MENU SCREEN
+   ========================================== */
+
+.menu-screen {
+    padding: 5px;
+}
+
+.menu-header {
+    padding: 5px;
+    border-bottom: 2px solid var(--gba-screen-dark);
+    margin-bottom: 5px;
+}
+
+.player-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.player-name {
+    font-size: 8px;
+    font-weight: bold;
+}
+
+.xp-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--gba-screen-dark);
+    border: 1px solid var(--gba-screen-darkest);
+}
+
+.xp-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--gba-screen-darkest);
+    transition: width 0.5s ease-out;
+}
+
+.xp-text {
+    font-size: 5px;
+}
+
+.menu-options {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 5px 0;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    background: transparent;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.1s;
+    font-size: 6px;
+}
+
+.menu-item.selected {
+    background: var(--gba-screen-dark);
+    color: var(--gba-screen-light);
+    border-color: var(--gba-screen-darkest);
+}
+
+.menu-item:hover {
+    background: var(--gba-screen-dark);
+    color: var(--gba-screen-light);
+}
+
+.menu-icon {
+    font-size: 10px;
+    width: 16px;
+    text-align: center;
+}
+
+.note-count {
+    margin-left: auto;
+    font-size: 5px;
+}
+
+.menu-creature {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.creature-sprite {
+    width: 24px;
+    height: 24px;
+    background: var(--gba-screen-darkest);
+    border-radius: 50% 50% 40% 40%;
+    position: relative;
+}
+
+.creature-sprite::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 4px;
+    width: 4px;
+    height: 4px;
+    background: var(--gba-screen-light);
+    box-shadow: 10px 0 0 var(--gba-screen-light);
+    border-radius: 50%;
+    animation: eyeBlink 3s infinite;
+}
+
+@keyframes eyeBlink {
+    0%, 95%, 100% { transform: scaleY(1); }
+    97% { transform: scaleY(0.1); }
+}
+
+.creature-sprite.idle {
+    animation: creatureIdle 0.5s steps(2) infinite;
+}
+
+@keyframes creatureIdle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+}
+
+.creature-speech {
+    background: var(--gba-screen-light);
+    border: 1px solid var(--gba-screen-darkest);
+    padding: 3px 5px;
+    font-size: 4px;
+    max-width: 80px;
+    text-align: center;
+    position: relative;
+    margin-top: 3px;
+}
+
+.creature-speech::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 3px solid transparent;
+    border-bottom-color: var(--gba-screen-darkest);
+}
+
+/* ==========================================
+   NOTES SCREEN
+   ========================================== */
+
+.screen-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+    border-bottom: 2px solid var(--gba-screen-dark);
+    margin-bottom: 5px;
+}
+
+.screen-header h2 {
+    font-size: 7px;
+    flex: 1;
+    text-align: center;
+}
+
+.back-btn {
+    background: var(--gba-screen-dark);
+    color: var(--gba-screen-light);
+    border: none;
+    padding: 4px 6px;
+    font-family: inherit;
+    font-size: 5px;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.back-btn:hover {
+    transform: scale(1.1);
+}
+
+.back-btn:active {
+    transform: scale(0.95);
+}
+
+.notes-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Custom scrollbar */
+.notes-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notes-container::-webkit-scrollbar-track {
+    background: var(--gba-screen-dark);
+}
+
+.notes-container::-webkit-scrollbar-thumb {
+    background: var(--gba-screen-darkest);
+}
+
+.empty-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    color: var(--gba-screen-dark);
+}
+
+.empty-sprite {
+    width: 30px;
+    height: 30px;
+    background: var(--gba-screen-dark);
+    border-radius: 5px;
+    margin-bottom: 10px;
+    opacity: 0.5;
+}
+
+.empty-message p {
+    font-size: 6px;
+    margin: 2px 0;
+}
+
+.hint {
+    font-size: 5px;
+    opacity: 0.7;
+}
+
+.note-card {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px;
+    background: var(--gba-screen-light);
+    border: 2px solid var(--gba-screen-dark);
+    cursor: pointer;
+    transition: all 0.1s;
+}
+
+.note-card:hover {
+    background: var(--gba-screen-bg);
+    transform: translateX(3px);
+}
+
+.note-card:active {
+    transform: translateX(1px);
+}
+
+.note-card .note-mood-icon {
+    font-size: 12px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gba-screen-dark);
+    border-radius: 3px;
+}
+
+.note-card .note-info {
+    flex: 1;
+    overflow: hidden;
+}
+
+.note-card .note-title {
+    font-size: 6px;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.note-card .note-preview {
+    font-size: 4px;
+    color: var(--gba-screen-dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+}
+
+.note-card .note-level-badge {
+    font-size: 5px;
+    padding: 2px 4px;
+    background: var(--gba-screen-darkest);
+    color: var(--gba-screen-light);
+    border-radius: 2px;
+}
+
+.notes-footer {
+    padding: 5px;
+    border-top: 2px solid var(--gba-screen-dark);
+    text-align: center;
+    font-size: 5px;
+}
+
+/* ==========================================
+   NEW NOTE SCREEN
+   ========================================== */
+
+.new-note-screen {
+    gap: 5px;
+}
+
+.summoning-circle {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto;
+    border: 3px solid var(--gba-screen-darkest);
+    border-radius: 50%;
+    position: relative;
+    animation: rotate 4s linear infinite;
+}
+
+.summoning-circle::before {
+    content: '✨';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 16px;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.2); }
+}
+
+.magic-particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.note-form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow-y: auto;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.form-group label {
+    font-size: 5px;
+    color: var(--gba-screen-dark);
+}
+
+.form-group input,
+.form-group textarea {
+    background: var(--gba-screen-light);
+    border: 2px solid var(--gba-screen-dark);
+    padding: 5px;
+    font-family: inherit;
+    font-size: 6px;
+    color: var(--gba-screen-darkest);
+    resize: none;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--gba-screen-darkest);
+    background: var(--pixel-white);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: var(--gba-screen-dark);
+    opacity: 0.7;
+}
+
+.mood-selector {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+}
+
+.mood-option {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    background: var(--gba-screen-light);
+    border: 2px solid var(--gba-screen-dark);
+    cursor: pointer;
+    transition: all 0.1s;
+}
+
+.mood-option:hover {
+    transform: scale(1.1);
+}
+
+.mood-option.selected {
+    background: var(--gba-screen-dark);
+    border-color: var(--gba-screen-darkest);
+    transform: scale(1.15);
+    box-shadow: 0 0 5px var(--gba-screen-darkest);
+}
+
+.summon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    background: var(--gba-screen-darkest);
+    color: var(--gba-screen-light);
+    border: none;
+    padding: 8px;
+    font-family: inherit;
+    font-size: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: auto;
+}
+
+.summon-btn:hover {
+    background: var(--gba-screen-dark);
+    transform: scale(1.02);
+}
+
+.summon-btn:active {
+    transform: scale(0.98);
+}
+
+.summon-btn .btn-icon {
+    font-size: 12px;
+    animation: sparkle 0.5s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* ==========================================
+   VIEW NOTE SCREEN
+   ========================================== */
+
+.note-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.action-btn {
+    background: var(--gba-screen-dark);
+    border: none;
+    padding: 4px 6px;
+    font-size: 8px;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.action-btn:hover {
+    transform: scale(1.1);
+}
+
+.edit-btn:hover {
+    background: var(--pixel-blue);
+}
+
+.delete-btn:hover {
+    background: var(--pixel-red);
+}
+
+.note-display {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    overflow-y: auto;
+}
+
+.note-creature-display {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto;
+    background: var(--gba-screen-darkest);
+    border-radius: 50% 50% 40% 40%;
+    position: relative;
+    animation: creatureIdle 0.5s steps(2) infinite;
+}
+
+.note-creature-display::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 8px;
+    width: 6px;
+    height: 6px;
+    background: var(--gba-screen-light);
+    box-shadow: 16px 0 0 var(--gba-screen-light);
+    border-radius: 50%;
+}
+
+.note-scroll {
+    background: var(--gba-screen-light);
+    border: 2px solid var(--gba-screen-dark);
+    padding: 8px;
+    flex: 1;
+}
+
+.note-scroll h3 {
+    font-size: 8px;
+    text-align: center;
+    padding-bottom: 5px;
+    border-bottom: 1px dashed var(--gba-screen-dark);
+    margin-bottom: 5px;
+}
+
+.note-stats {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.note-stats span {
+    font-size: 5px;
+    padding: 2px 4px;
+    background: var(--gba-screen-dark);
+    color: var(--gba-screen-light);
+    border-radius: 2px;
+}
+
+.note-content-display {
+    font-size: 5px;
+    line-height: 1.6;
+    max-height: 60px;
+    overflow-y: auto;
+    padding: 5px;
+    background: var(--gba-screen-bg);
+    border: 1px solid var(--gba-screen-dark);
+}
+
+.note-meta {
+    margin-top: 5px;
+    font-size: 4px;
+    color: var(--gba-screen-dark);
+    text-align: right;
+}
+
+/* ==========================================
+   BATTLE SCREEN
+   ========================================== */
+
+.battle-screen {
+    gap: 5px;
+}
+
+.battle-arena {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 10px;
+    background: var(--gba-screen-dark);
+    border: 2px solid var(--gba-screen-darkest);
+    margin: 5px 0;
+}
+
+.battle-note {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+}
+
+.battle-note .battle-creature {
+    width: 30px;
+    height: 30px;
+    background: var(--gba-screen-light);
+    border-radius: 50% 50% 40% 40%;
+    position: relative;
+}
+
+.battle-note .battle-creature::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 5px;
+    width: 5px;
+    height: 5px;
+    background: var(--gba-screen-darkest);
+    box-shadow: 12px 0 0 var(--gba-screen-darkest);
+    border-radius: 50%;
+}
+
+.battle-note.left .battle-creature {
+    animation: battleBounceLeft 0.5s ease-in-out infinite;
+}
+
+.battle-note.right .battle-creature {
+    animation: battleBounceRight 0.5s ease-in-out infinite;
+}
+
+@keyframes battleBounceLeft {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(5px); }
+}
+
+@keyframes battleBounceRight {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(-5px); }
+}
+
+.battle-note .hp-bar {
+    width: 40px;
+    height: 4px;
+    background: var(--gba-screen-light);
+    border: 1px solid var(--gba-screen-darkest);
+}
+
+.battle-note .hp-fill {
+    height: 100%;
+    width: 100%;
+    background: var(--pixel-green);
+    transition: width 0.3s ease-out;
+}
+
+.battle-note .hp-fill.low {
+    background: var(--pixel-red);
+}
+
+.battle-note .battle-name {
+    font-size: 4px;
+    color: var(--gba-screen-light);
+    max-width: 50px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.vs-symbol {
+    font-size: 10px;
+    font-weight: bold;
+    color: var(--gba-screen-light);
+    animation: vsPulse 0.5s ease-in-out infinite;
+}
+
+@keyframes vsPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+.battle-log {
+    background: var(--gba-screen-light);
+    border: 2px solid var(--gba-screen-dark);
+    padding: 5px;
+    height: 40px;
+    overflow-y: auto;
+    font-size: 4px;
+}
+
+.battle-log p {
+    margin: 2px 0;
+}
+
+.battle-log .hit {
+    color: var(--pixel-red);
+}
+
+.battle-log .heal {
+    color: var(--pixel-green);
+}
+
+.battle-log .win {
+    color: var(--pixel-yellow);
+    font-weight: bold;
+}
+
+.battle-select {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    max-height: 50px;
+    overflow-y: auto;
+    padding: 4px;
+}
+
+.battle-select .battle-option {
+    padding: 4px 6px;
+    background: var(--gba-screen-light);
+    border: 2px solid var(--gba-screen-dark);
+    font-size: 4px;
+    cursor: pointer;
+    transition: all 0.1s;
+}
+
+.battle-select .battle-option:hover {
+    background: var(--gba-screen-bg);
+}
+
+.battle-select .battle-option.selected {
+    background: var(--gba-screen-darkest);
+    color: var(--gba-screen-light);
+}
+
+.battle-btn {
+    background: var(--pixel-red);
+    color: var(--pixel-white);
+    border: none;
+    padding: 6px;
+    font-family: inherit;
+    font-size: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.battle-btn:hover {
+    background: var(--pixel-orange);
+    transform: scale(1.02);
+}
+
+.battle-btn:disabled {
+    background: var(--pixel-gray);
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Battle Animations */
+.battle-note.attacking .battle-creature {
+    animation: attack 0.3s ease-out;
+}
+
+@keyframes attack {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(30px) scale(1.2); }
+    100% { transform: translateX(0); }
+}
+
+.battle-note.hit .battle-creature {
+    animation: hit 0.3s ease-out;
+}
+
+@keyframes hit {
+    0%, 100% { transform: translateX(0); filter: brightness(1); }
+    25% { transform: translateX(-5px); filter: brightness(2); }
+    50% { transform: translateX(5px); filter: brightness(0.5); }
+    75% { transform: translateX(-3px); filter: brightness(1.5); }
+}
+
+/* ==========================================
+   STATS SCREEN
+   ========================================== */
+
+.stats-screen {
+    gap: 5px;
+}
+
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+    padding: 5px;
+}
+
+.stat-card {
+    background: var(--gba-screen-light);
+    border: 2px solid var(--gba-screen-dark);
+    padding: 8px;
+    text-align: center;
+}
+
+.stat-icon {
+    font-size: 14px;
+    margin-bottom: 3px;
+}
+
+.stat-value {
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--gba-screen-darkest);
+}
+
+.stat-label {
+    font-size: 4px;
+    color: var(--gba-screen-dark);
+    margin-top: 2px;
+}
+
+.achievements {
+    flex: 1;
+    padding: 5px;
+    overflow-y: auto;
+}
+
+.achievements h3 {
+    font-size: 6px;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.achievement-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.achievement {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px;
+    background: var(--gba-screen-light);
+    border: 1px solid var(--gba-screen-dark);
+    font-size: 5px;
+}
+
+.achievement.locked {
+    opacity: 0.5;
+    filter: grayscale(100%);
+}
+
+.achievement.unlocked {
+    background: var(--gba-screen-bg);
+    animation: achievementShine 2s infinite;
+}
+
+@keyframes achievementShine {
+    0%, 100% { box-shadow: none; }
+    50% { box-shadow: 0 0 5px var(--pixel-yellow); }
+}
+
+.ach-icon {
+    font-size: 10px;
+}
+
+.ach-name {
+    flex: 1;
+}
+
+/* ==========================================
+   TOAST NOTIFICATION
+   ========================================== */
+
+.toast {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: var(--gba-screen-darkest);
+    color: var(--gba-screen-light);
+    padding: 6px 10px;
+    font-size: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border: 2px solid var(--pixel-yellow);
+    z-index: 100;
+    opacity: 0;
+    transition: all 0.3s ease-out;
+}
+
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.toast-icon {
+    font-size: 10px;
+    animation: toastSpin 1s linear infinite;
+}
+
+@keyframes toastSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* ==========================================
+   LEVEL UP OVERLAY
+   ========================================== */
+
+.level-up-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 56, 15, 0.95);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+}
+
+.level-up-overlay.show {
+    display: flex;
+    animation: overlayFadeIn 0.3s ease-out;
+}
+
+@keyframes overlayFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.level-up-content {
+    text-align: center;
+    color: var(--gba-screen-light);
+}
+
+.level-up-content h2 {
+    font-size: 14px;
+    animation: levelUpBounce 0.5s ease-out infinite;
+}
+
+@keyframes levelUpBounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.level-up-creature {
+    width: 50px;
+    height: 50px;
+    margin: 15px auto;
+    background: var(--gba-screen-light);
+    border-radius: 50% 50% 40% 40%;
+    animation: levelUpDance 0.3s steps(2) infinite;
+}
+
+@keyframes levelUpDance {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+}
+
+.new-level {
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+.continue-btn {
+    background: var(--gba-screen-light);
+    color: var(--gba-screen-darkest);
+    border: none;
+    padding: 8px 15px;
+    font-family: inherit;
+    font-size: 8px;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.continue-btn:hover {
+    transform: scale(1.05);
+}
+
+/* ==========================================
+   GBA CONTROLS (Decorative)
+   ========================================== */
+
+.gba-controls {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 15px;
+}
+
+.dpad {
+    position: relative;
+    width: 60px;
+    height: 60px;
+}
+
+.dpad-up, .dpad-down, .dpad-left, .dpad-right {
+    position: absolute;
+    background: #333;
+    border-radius: 3px;
+}
+
+.dpad-up, .dpad-down {
+    width: 20px;
+    height: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.dpad-up { top: 0; border-radius: 5px 5px 0 0; }
+.dpad-down { bottom: 0; border-radius: 0 0 5px 5px; }
+
+.dpad-left, .dpad-right {
+    width: 24px;
+    height: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.dpad-left { left: 0; border-radius: 5px 0 0 5px; }
+.dpad-right { right: 0; border-radius: 0 5px 5px 0; }
+
+.dpad-center {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: #333;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    transform: rotate(-25deg);
+}
+
+.btn-a, .btn-b {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    font-size: 10px;
+    color: #fff;
+    font-weight: bold;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.3);
+}
+
+.btn-a {
+    background: #a83232;
+}
+
+.btn-b {
+    background: #a83232;
+    margin-top: 15px;
+}
+
+.speaker-grill {
+    position: absolute;
+    bottom: 25px;
+    width: 40px;
+    height: 8px;
+    background: repeating-linear-gradient(
+        90deg,
+        var(--gba-shell-dark) 0px,
+        var(--gba-shell-dark) 2px,
+        transparent 2px,
+        transparent 4px
+    );
+}
+
+.speaker-grill.left { left: 20px; }
+.speaker-grill.right { right: 20px; }
+
+.gba-label {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 6px;
+    color: var(--gba-shell-dark);
+    letter-spacing: 2px;
+}
+
+/* ==========================================
+   RESPONSIVE ADJUSTMENTS
+   ========================================== */
+
+@media (max-width: 450px) {
+    .gba-device {
+        border-radius: 15px 15px 40px 40px;
+        padding: 15px;
+    }
+
+    .screen-bezel {
+        padding: 10px;
+    }
+
+    .gba-controls {
+        padding: 15px 10px;
+    }
+
+    .dpad {
+        width: 50px;
+        height: 50px;
+    }
+
+    .btn-a, .btn-b {
+        width: 25px;
+        height: 25px;
+        font-size: 8px;
+    }
+}
+
+/* ==========================================
+   SPECIAL EFFECTS
+   ========================================== */
+
+/* Summon Animation */
+.summoning-active .summoning-circle {
+    animation: summonPulse 0.5s ease-out;
+    border-color: var(--pixel-yellow);
+}
+
+@keyframes summonPulse {
+    0% { transform: scale(1) rotate(0deg); box-shadow: none; }
+    50% { transform: scale(1.2) rotate(180deg); box-shadow: 0 0 20px var(--pixel-yellow); }
+    100% { transform: scale(1) rotate(360deg); box-shadow: none; }
+}
+
+/* Note Delete Animation */
+.note-card.deleting {
+    animation: noteDelete 0.3s ease-out forwards;
+}
+
+@keyframes noteDelete {
+    0% { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(-100%); opacity: 0; }
+}
+
+/* Victory/Defeat Effects */
+.battle-note.victory .battle-creature {
+    animation: victoryDance 0.3s steps(2) infinite;
+}
+
+@keyframes victoryDance {
+    0%, 100% { transform: translateY(0) rotate(-5deg); }
+    50% { transform: translateY(-10px) rotate(5deg); }
+}
+
+.battle-note.defeat .battle-creature {
+    animation: defeat 0.5s ease-out forwards;
+}
+
+@keyframes defeat {
+    0% { transform: rotate(0) scale(1); opacity: 1; }
+    100% { transform: rotate(90deg) scale(0.5); opacity: 0.3; }
+}
+
+/* Mood-specific creature colors */
+.note-card[data-mood="fire"] .note-mood-icon,
+.mood-fire { background: var(--mood-fire) !important; }
+
+.note-card[data-mood="water"] .note-mood-icon,
+.mood-water { background: var(--mood-water) !important; }
+
+.note-card[data-mood="earth"] .note-mood-icon,
+.mood-earth { background: var(--mood-earth) !important; }
+
+.note-card[data-mood="lightning"] .note-mood-icon,
+.mood-lightning { background: var(--mood-lightning) !important; }
+
+.note-card[data-mood="star"] .note-mood-icon,
+.mood-star { background: var(--mood-star) !important; }

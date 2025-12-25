@@ -1,0 +1,55 @@
+:root {
+  /* Primary palette - warm, slightly desaturated GBA style */
+  --gba-bg-dark: #1a1c2c;
+  --gba-bg-mid: #333c57;
+  --gba-bg-light: #566c86;
+
+  --gba-text-dark: #333c57;
+  --gba-text-light: #f4f4f4;
+  --gba-text-muted: #94b0c2;
+
+  /* Priority colors */
+  --slime-green: #38b764;
+  --goblin-yellow: #feae34;
+  --dragon-red: #e43b44;
+
+  /* Category colors */
+  --knight-blue: #3978a8;
+  --mage-purple: #8b5fbf;
+  --bard-pink: #f26b8a;
+  --rogue-gray: #5a6988;
+
+  /* UI accents */
+  --xp-gold: #ffd700;
+  --border-color: #566c86;
+  --shadow-color: rgba(0, 0, 0, 0.5);
+
+  /* Extended palette from design doc */
+  --pixel-purple: #5A3472;
+  --cartridge-teal: #30B8A0;
+  --screen-green: #9BBC0F;
+  --link-pink: #F878B0;
+  --dark-dungeon: #1A1A2E;
+  --midnight-blue: #16213E;
+  --deep-cave: #0F0F1A;
+  --panel-gray: #2D2D44;
+  --parchment: #E8E4D9;
+  --faded-scroll: #A8A498;
+  --gold-coin: #FFD700;
+  --potion-red: #E84855;
+  --mana-blue: #4A90D9;
+
+  /* Spacing (4px grid) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Typography */
+  --font-pixel: 'Press Start 2P', 'Courier New', monospace;
+  --font-retro: 'VT323', 'Lucida Console', monospace;
+}

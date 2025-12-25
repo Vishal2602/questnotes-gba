@@ -1,0 +1,28 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--dark-dungeon);
+  overflow: hidden;
+}
+
+.app__body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.app__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--dark-dungeon);
+}
+
+/* Responsive - hide sidebar on mobile */
+@media (max-width: 600px) {
+  .app__body {
+    flex-direction: column;
+  }
+}

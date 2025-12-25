@@ -1,0 +1,98 @@
+@import './variables.css';
+@import './animations.css';
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-retro);
+  font-size: 16px;
+  background-color: var(--dark-dungeon);
+  color: var(--parchment);
+  line-height: 1.5;
+}
+
+#root {
+  height: 100%;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+  background: var(--deep-cave);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--pixel-purple);
+  border: 2px solid var(--deep-cave);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cartridge-teal);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--deep-cave);
+}
+
+/* Scanline overlay effect */
+.scanlines {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.1) 2px,
+    rgba(0, 0, 0, 0.1) 4px
+  );
+  z-index: 9999;
+}
+
+/* Pixel font headings */
+.heading {
+  font-family: var(--font-pixel);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 2px 2px 0 #000;
+}
+
+/* Glow effect for important text */
+.glow-text {
+  text-shadow: 0 0 8px var(--cartridge-teal);
+}
+
+/* Utility classes */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.gap-1 { gap: var(--space-1); }
+.gap-2 { gap: var(--space-2); }
+.gap-3 { gap: var(--space-3); }
+.gap-4 { gap: var(--space-4); }
+
+/* Selection styling */
+::selection {
+  background: var(--pixel-purple);
+  color: var(--parchment);
+}

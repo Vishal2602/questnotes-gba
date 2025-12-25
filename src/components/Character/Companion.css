@@ -1,0 +1,103 @@
+.companion {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  padding: var(--space-2);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.companion:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.companion__sprite {
+  font-size: 32px;
+  line-height: 1;
+  transition: transform 0.3s;
+}
+
+/* Mood-based animations */
+.companion--idle .companion__sprite {
+  animation: float-idle 3s ease-in-out infinite;
+}
+
+.companion--happy .companion__sprite {
+  animation: companion-bounce 0.5s ease-in-out infinite;
+}
+
+.companion--sleeping .companion__sprite {
+  opacity: 0.7;
+  filter: grayscale(30%);
+}
+
+.companion--worried .companion__sprite {
+  animation: shake 0.5s ease-in-out infinite;
+}
+
+.companion__speech {
+  background: var(--deep-cave);
+  border: 2px solid var(--panel-gray);
+  padding: var(--space-1) var(--space-2);
+  position: relative;
+  max-width: 140px;
+}
+
+/* Speech bubble triangle */
+.companion__speech::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-right-color: var(--panel-gray);
+}
+
+.companion__speech::after {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-right-color: var(--deep-cave);
+}
+
+.companion__message {
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  color: var(--parchment);
+  display: block;
+  line-height: 1.4;
+}
+
+/* Different speech styles per mood */
+.companion--happy .companion__speech {
+  border-color: var(--screen-green);
+}
+
+.companion--happy .companion__speech::before {
+  border-right-color: var(--screen-green);
+}
+
+.companion--worried .companion__speech {
+  border-color: var(--goblin-yellow);
+}
+
+.companion--worried .companion__speech::before {
+  border-right-color: var(--goblin-yellow);
+}
+
+.companion--sleeping .companion__message {
+  opacity: 0.6;
+  font-style: italic;
+}
+
+/* Emoji styling to look more pixel-ish */
+.companion__emoji {
+  display: inline-block;
+  filter: contrast(1.1);
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
+}
